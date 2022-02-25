@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input data-role="name" type="text" placeholder="name">
+    <input data-role="date" type="date">
+    <input data-role="cast" type="text" placeholder="cast">
+    <input data-role="country" type="text" placeholder="country">
+    <button data-role="btn">click</button>
+    <br>
+    <br>
+    <br>
+    <button data-role="last movie">last movie</button>
+    <div data-role="div"></div>
+    <br><br><br><br>
+ <input data-role="getcountry" type="text" placeholder="country">
+    <button data-role="cnt">country</button>
+      <div data-role="div2"></div>
+<div data-role="inputs"></div>
+ <select data-role="movie">
+                <option disabled="disabled" >loading data</option>
+            </select>
+            <input type="text" name="name">
+            <input type="text" name="publish_date">
+            <input type="text" name="cast">
+            <input type="text" name="origin_countery">
+      <button  data-role="update">update</button>
+      <button data-role="post">post</button>
+      </div>
+</body>
+<!--מייצר סרט -->
+<!--מציג את כל הערכים באינפןט -->
+<script>
+    $(function(){
+     
+$('[data-role="btn"]').click(function(){
+    let data={name : $('[data-role="name"]').val(),publish_date :$('[data-role="date"]').val(),cast:($('[data-role="cast"]').val()).split(","),origin_countery : $('[data-role="country"]').val()}
+    /*    let name = $('[data-role="name"]').val()
+        let publish_date = $('[data-role="date"]').val()
+        let cast = ($('[data-role="cast"]').val()).split(",")
+        let origin_countery = $('[data-role="country"]').val() */
+$.post('/movie',{/* name,publish_date,cast,origin_countery */data},(data)=>{
+    console.log(data);
+})
+})
+$('[data-role="last movie"]').click(function(){
+$.get('/getLatestMovie',(response)=>{
+           const select = $('[data-role="div"]');
+           populateOptions(select, response/* .movie */ );
+        })
+})
+
+$.get('/getalltMovie',(response)=>{
+           const select = $('[data-role="movie"]');
+           populateOptions123(select, response.movie  );
+        })
+
+
+
+
+    function populateOptions(element,models){
+element.html('')
+
+    $.each(models,function(_,model){  
+        let h1=$('<h1>');
+    h1.text(model.publish_date);
+    /* option.attr("value",model._id); */
+    element.append(h1)
+    console.log(h1.val());
+    })
+    }
+
+    
+    function populateOptions123(element,models){
+element.html('')
+
+    $.each(models,function(_,model){  
+        let option=$('<option>');
+    option.text(model.name);
+     option.attr("value",model._id); 
+    element.append(option)
+    console.log(option.val());
+    })
+    }
+
+$('[data-role="cnt"]').click(function(){
+let origin_countery = $('[data-role="getcountry"]').val()
+$.get('/getallmoviesbycontrey/'+origin_countery,(response)=>{
+           const select = $('[data-role="div2"]');
+           populateOptions(select, response.movie );
+        })
+})
+
+
+    })
+
+
+
+      $('[data-role="movie"]').change(function(){
+            console.log($(this).val());
+            fetch(`/findAMovie/${$(this).val()}`)
+            .then(movie=>movie.json())
+            .then(movie=>populatemovie(movie))
+        })
+
+        function populatemovie(movie){
+            $.each(movie, (key, value)=>{
+                const element = $(`[name="${key}"]`);
+                element.attr('type') === 'checkbox' ? element.prop( "checked", value == 'true') : element.val(value)
+            });
+        }
+
+
+         $("[data-role='update']").click(function () {
+            let _id = $("[data-role='movie']").val();
+            let name=$('[name="name"]').val()
+            let publish_date=$('[name="publish_date"]').val()
+            let cast=$('[name="cast"]').val()
+            let origin_countery=$('[name="origin_countery"]').val()
+            let data={ name,publish_date, cast,origin_countery}
+            fetch("/updateMovie/"+_id, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+               body: JSON.stringify(data),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+              console.log("sdfsdf");
+               
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          });
+
+
+
+
+              $("[data-role='post']").click(function () {
+            let _id = $("[data-role='movie']").val();
+            let name=$('[name="name"]').val()
+            let publish_date=$('[name="publish_date"]').val()
+            let cast=$('[name="cast"]').val()
+            let origin_countery=$('[name="origin_countery"]').val()
+            let data={ name,publish_date, cast,origin_countery}
+            fetch("/findAMovie/"+_id, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+               body: JSON.stringify(data),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+              console.log("sdfsdf");
+               
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          });
+</script>
+</html>
